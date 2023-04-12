@@ -22,7 +22,7 @@ void printTab(int32_t tabLen);
 void tansCover(int32_t tabLen, int32_t bkNum);
 void placeTan(pos start, pos range, pos block);
 
-int32_t **SQTable, paintNum;
+int32_t **SQTable, paintNum, SQLen;
 pos *bkList;
 
 int main() {
@@ -30,6 +30,7 @@ int main() {
     paintNum = 0;
 
     scanf("%d %d", &blockN, &tabLen);
+    SQLen = tabLen;
     bkList = (pos *)malloc(blockN * sizeof(pos));
     SQTable = (int32_t **)malloc(tabLen * sizeof(int32_t *));
 
@@ -40,6 +41,9 @@ int main() {
 
     tansCover(tabLen, blockN);
     printTab(tabLen);
+
+    free(bkList);
+    free(SQTable);
 
     return 0;
 }
@@ -57,10 +61,6 @@ void tansCover(int32_t tabLen, int32_t bkNum) {
 }
 
 void placeTan(pos start, pos range, pos block) {
-    pos stQuad1 = setPos(start.x + range.x, start.y + range.y);
-    pos stQuad2 = setPos(start.x, start.y + range.y);
-    pos stQuad3 = setPos(start.x, start.y);
-    pos stQuad4 = setPos(start.x, start.y + range.y);
     pos center1 = setPos(start.x + range.x / 2, start.y + range.y / 2);
     pos center2 = setPos(center1.x - 1, center1.y);
     pos center3 = setPos(center1.x - 1, center1.y - 1);
@@ -69,6 +69,10 @@ void placeTan(pos start, pos range, pos block) {
 
     if (range.x > 2 && range.y > 2) {
         range.x /= 2, range.y /= 2;
+        pos stQuad1 = setPos(start.x + range.x, start.y + range.y);
+        pos stQuad2 = setPos(start.x, start.y + range.y);
+        pos stQuad3 = setPos(start.x, start.y);
+        pos stQuad4 = setPos(start.x + range.x, start.y);
 
         if (quadrant == 1)
             placeTan(stQuad1, range, block);
@@ -94,6 +98,8 @@ void placeTan(pos start, pos range, pos block) {
     if (quadrant == 3) setTan(center1, center3, paintNum);
     if (quadrant == 4) setTan(center1, center4, paintNum);
 
+    printTab(SQLen);
+    printf("\n");
     return;
 }
 
@@ -115,11 +121,11 @@ pos setPos(int32_t posX, int32_t posY) {
 }
 
 void setTan(pos sqCenter, pos qPoint, int32_t paintNum) {
-    SQTable[sqCenter.x][sqCenter.y] = paintNum;
-    SQTable[sqCenter.x - 1][sqCenter.y] = paintNum;
-    SQTable[sqCenter.x - 1][sqCenter.y - 1] = paintNum;
-    SQTable[sqCenter.x][sqCenter.y - 1] = paintNum;
-    SQTable[qPoint.x][qPoint.y] = 0;
+    int32_t quad = setQuad(qPoint, sqCenter);
+    if (quad != 1) SQTable[sqCenter.x][sqCenter.y] = paintNum;
+    if (quad != 2) SQTable[sqCenter.x - 1][sqCenter.y] = paintNum;
+    if (quad != 3) SQTable[sqCenter.x - 1][sqCenter.y - 1] = paintNum;
+    if (quad != 4) SQTable[sqCenter.x][sqCenter.y - 1] = paintNum;
     return;
 }
 
