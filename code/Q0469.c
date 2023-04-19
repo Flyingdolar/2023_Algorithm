@@ -34,9 +34,9 @@ int main() {
     bkList = (pos *)malloc(blockN * sizeof(pos));
     SQTable = (int32_t **)malloc(tabLen * sizeof(int32_t *));
 
-    for (size_t idx = 0; idx < tabLen; idx++)
+    for (size_t idx = 0; idx < (size_t)tabLen; idx++)
         SQTable[idx] = (int32_t *)malloc(tabLen * sizeof(int32_t));
-    for (size_t idx = 0; idx < blockN; idx++)
+    for (size_t idx = 0; idx < (size_t)blockN; idx++)
         scanf("%d %d", &bkList[idx].x, &bkList[idx].y);
 
     tansCover(tabLen, blockN);
@@ -52,7 +52,7 @@ void tansCover(int32_t tabLen, int32_t bkNum) {
     int32_t partLen = tabLen / sqrt(bkNum);
     pos partRange = {.x = partLen, .y = partLen};
 
-    for (size_t idx = 0; idx < bkNum; idx++) {
+    for (size_t idx = 0; idx < (size_t)bkNum; idx++) {
         int32_t secX = (bkList[idx].x / partLen) * partLen;
         int32_t secY = (bkList[idx].y / partLen) * partLen;
         placeTan(setPos(secX, secY), partRange, bkList[idx]);
@@ -104,8 +104,8 @@ void placeTan(pos start, pos range, pos block) {
 }
 
 void printTab(int32_t tabLen) {
-    for (size_t posY = 0; posY < tabLen; posY++) {
-        for (size_t posX = 0; posX < tabLen; posX++) {
+    for (size_t posY = 0; posY < (size_t)tabLen; posY++) {
+        for (size_t posX = 0; posX < (size_t)tabLen; posX++) {
             if (posX != 0) printf(" ");
             printf("%d", SQTable[posX][posY]);
         }

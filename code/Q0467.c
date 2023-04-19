@@ -20,12 +20,12 @@ int main() {
     scanf("%d %d", &partN, &dayM);
     mapT = (int32_t *)malloc(partN * sizeof(int32_t));
 
-    for (size_t idx = 0; idx < partN; idx++)
+    for (size_t idx = 0; idx < (size_t)partN; idx++)
         scanf("%d", &mapT[idx]);
     for (size_t idx = partN - 1; idx > 0; idx--)
         mapT[idx] -= mapT[idx - 1];
 
-    for (size_t idx = 1; idx <= dayM; idx++) {
+    for (size_t idx = 1; idx <= (size_t)dayM; idx++) {
         scanf("%d %d %d", &pStart, &pEnd, &prog);
         if (isDone < 0) {
             mapT[pStart] -= prog;

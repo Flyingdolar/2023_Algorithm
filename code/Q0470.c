@@ -21,7 +21,7 @@ int64_t getArea(vtex *Poly, int32_t len);
 // Debug
 void vPrint(vtex *List, int32_t len, char *str) {
     printf("%s 列表資訊:\n", str);
-    for (size_t idx = 0; idx < len; idx++)
+    for (size_t idx = 0; idx < (size_t)len; idx++)
         printf("  %zu: ( %lld, %lld ) [%.3f]", idx, List[idx].x, List[idx].y, List[idx].ang);
     printf("\n");
     return;
@@ -33,16 +33,16 @@ int main() {
     scanf("%d", &num);
     vtex Point[num + 1], Poly[num + 1], tmp;
 
-    for (size_t idx = 0; idx < num; idx++)
+    for (size_t idx = 0; idx < (size_t)num; idx++)
         scanf("%lld %lld", &Point[idx].x, &Point[idx].y);
 
-    for (size_t idx = 1; idx < num; idx++) {
+    for (size_t idx = 1; idx < (size_t)num; idx++) {
         if (Point[idx].y > Point[0].y) continue;
         if (Point[idx].y == Point[0].y && Point[idx].x >= Point[0].x) continue;
         vPass(&Point[idx], &tmp), vPass(&Point[0], &Point[idx]), vPass(&tmp, &Point[0]);
     }
 
-    for (size_t idx = 0; idx < num; idx++)
+    for (size_t idx = 0; idx < (size_t)num; idx++)
         vAngle(&Point[idx], &Point[0]);
     mgSort(Point, num, mini_Ang);
 
@@ -84,7 +84,7 @@ void mgSort(vtex *Arr, int32_t len, int32_t (*cond)(vtex, vtex)) {
     mgSort(arr_L, len_L, cond);
     mgSort(arr_R, len_R, cond);
 
-    for (size_t idx = 0; idx < len; idx++) {
+    for (size_t idx = 0; idx < (size_t)len; idx++) {
         if (len_L && len_R) {
             if (cond(*arr_L, *arr_R)) {
                 vPass(arr_L, &arr_M[idx]);
@@ -101,7 +101,7 @@ void mgSort(vtex *Arr, int32_t len, int32_t (*cond)(vtex, vtex)) {
             arr_R++, len_R--;
         }
     }
-    for (size_t idx = 0; idx < len; idx++)
+    for (size_t idx = 0; idx < (size_t)len; idx++)
         vPass(&arr_M[idx], &Arr[idx]);
 
     free(arr_M);
@@ -118,7 +118,7 @@ int32_t turn(vtex nextPt, vtex prevPt) {
 
 int32_t ghScan(vtex *Result, vtex *List, int32_t len) {
     int32_t polyLen = 1;
-    for (size_t idx = 0; idx <= len; idx++) {
+    for (size_t idx = 0; idx <= (size_t)len; idx++) {
         if (idx == 0) {
             List->ang = 0;
             vPass(List, Result);
@@ -140,7 +140,7 @@ int32_t ghScan(vtex *Result, vtex *List, int32_t len) {
 int64_t getArea(vtex *Poly, int32_t len) {
     int64_t field = 0;
 
-    for (size_t idx = 0; idx < len - 1; idx++) {
+    for (size_t idx = 0; idx < (size_t)(len - 1); idx++) {
         field += Poly[idx].x * Poly[idx + 1].y;
         field -= Poly[idx].y * Poly[idx + 1].x;
     }
