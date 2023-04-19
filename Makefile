@@ -1,19 +1,27 @@
-CXX=gcc-12
-all: Q0466.c Q0467.c Q0469.c Q0470.c Q04701.c
-	gcc Q0466.c -o 466.o
-	gcc Q0467.c -o 467.o
-	gcc Q0469.c -o 469.o
-	gcc Q0470.c -o 470.o
-	gcc Q04701.c -o 4701.o
+CC = gcc
+CFLAGS = -Wall -Wextra -std=c11
+LDLIBS = -lm
+# LDFLAGS = -L./library -I./library
 
-%: %.c
-	$(CXX) $@.c -g -o test.o -Wall
+CODEDIR = code
+OUTDIR = out
 
-test:
-	./test.o
+SRCS=$(wildcard code/Q0*.c)
+BINS=$(patsubst code/Q0%.c, $(OUTDIR)/%, $(SRCS))
+FILE=
+
+.PHONY: all debug clean
+
+all: $(BINS)
+
+$(BINS): $(SRCS) | $(OUTDIR)
+	$(CC) $(CFLAGS) $< -g -o $@ $(LDLIBS)
+
+%: $(CODEDIR)/Q0%.c | $(OUTDIR)
+	$(CC) $(CFLAGS) $< -g -o $(OUTDIR)/$@ $(LDLIBS)
+
+$(OUTDIR):
+	mkdir -p $(OUTDIR)
 
 clean:
-	Q0469
-	Q0470
-	code
-	test.o
+	rm -rf $(OUTDIR)
