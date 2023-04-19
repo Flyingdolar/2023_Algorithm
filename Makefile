@@ -26,3 +26,4 @@ $(OUTDIR):
 
 clean:
 	rm -rf $(OUTDIR)
+	mkdir $(OUTDIR)
