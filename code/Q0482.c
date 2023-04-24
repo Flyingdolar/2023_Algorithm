@@ -51,36 +51,32 @@ void mgSort(int32_t *Arr, size_t len, int32_t (*cond)(int32_t, int32_t)) {
     return;
 }
 
-int64_t mMPath(int32_t *list, size_t len) {
-    int64_t left = 0, right = 0;
-    size_t ldx = 0, rdx = 0;
+int64_t mMPath(int32_t *list, int32_t len) {
+    int64_t **arr = (int64_t **)malloc(len * sizeof(int64_t *));
+    for (int32_t idx = 0; idx < len; idx++)
+        arr[idx] = (int64_t *)malloc((idx + 1) * sizeof(int64_t));
 
-    if (len == 0) return 0;
-    if (len == 1) return (int64_t)list[0];
-    for (size_t idx = 1; idx < len; idx++)
-        right += list[idx];
-    for (size_t idx = 1; idx < len; idx++) {
-        left += list[idx - 1], right -= list[idx];
-        if (left >= right) {
-            if (left == right) ldx = idx, rdx = idx;
-            if (left > right) ldx = idx, rdx = idx - 1;
-            break;
+    for (int32_t idx = 0; idx < len; idx++) {
+        for (int32_t rdx = idx, cdx = 0; rdx < len; rdx++, cdx++) {
+            if (rdx == cdx) {
+                arr[rdx][cdx] = list[rdx];
+                continue;
+            }
+            arr[rdx][cdx] = min(arr[rdx][cdx + 1] + list[cdx], arr[rdx - 1][cdx] + list[rdx]);
+            for (int32_t kdx = cdx + 1; kdx < rdx; kdx++)
+                arr[rdx][cdx] = min(arr[rdx][cdx], max(arr[rdx][kdx + 1], arr[kdx - 1][cdx]) + list[kdx]);
         }
     }
-    left = list[ldx] + max(mMPath(&list[0], ldx), mMPath(&list[ldx + 1], len - ldx - 1));
-    right = list[rdx] + max(mMPath(&list[rdx + 1], len - rdx - 1), mMPath(&list[0], rdx));
-    if (ldx == rdx) return max(left, right);
-    return min(left, right);
+    return arr[len - 1][0];
 }
 
 int main() {
-    size_t len;
-    int32_t *list;
+    int32_t len, *list;
     int64_t pathVal;
 
-    scanf("%zu", &len);
+    scanf("%d", &len);
     list = (int32_t *)malloc(sizeof(int32_t) * len);
-    for (size_t idx = 0; idx < len; idx++)
+    for (int32_t idx = 0; idx < len; idx++)
         scanf("%d", &list[idx]);
 
     mgSort(list, len, comp);
