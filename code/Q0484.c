@@ -4,13 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define STAPT 0
-#define TRAMOUNT 0
-#define ENDPT 1
-#define LEN 2
-
 int32_t early(int32_t *a, int32_t *b) {
     if (a[0] <= b[0]) return 1;
+    return 0;
+}
+
+int32_t bigger(int32_t *a, int32_t *b) {
+    if ((a[1] - a[0]) >= (b[1] - b[0])) return 1;
     return 0;
 }
 
@@ -48,51 +48,38 @@ void mgSort(int32_t **Arr, size_t len, int32_t (*cond)(int32_t *, int32_t *)) {
 }
 
 void necTrack(int32_t **aList, int32_t *trackNum, int32_t *time) {
-    int32_t *pTrack, lenP, lenJ;
-    int32_t **tList = (int32_t **)malloc(*trackNum * sizeof(int32_t *));
-    for (int32_t idx = 0; idx < *trackNum; idx++)
-        tList[idx] = (int32_t *)malloc(3 * sizeof(int32_t));
+    int32_t allTrack = *trackNum;
+    int32_t allTime = *time;
+    int32_t idx = 0, pStart, pEnd = 0;
 
-    for (int32_t idx = 0; idx < *trackNum; idx++) {
-        if (idx == 0) {
-            tList[idx][ENDPT] = aList[idx][ENDPT];
-            tList[idx][LEN] = aList[idx][ENDPT] - aList[idx][STAPT];
-            tList[idx][TRAMOUNT] = 1;
-            continue;
-        }
-        for (int32_t jdx = 0; jdx < idx; jdx++) {
-            if (jdx == 0) {
-                pTrack = tList[jdx];
-                if (aList[idx][STAPT] >= tList[jdx][ENDPT])
-                    lenP = tList[jdx][LEN] + (aList[idx][ENDPT] - aList[idx][STAPT]);
-                else
-                    lenP = tList[jdx][LEN] + (aList[idx][ENDPT] - tList[jdx][ENDPT]);
-                continue;
+    *time = 0, *trackNum = 0;
+    while (idx < allTrack) {
+        if (aList[idx][0] > pEnd) {
+            (*time) += aList[idx][0] - pEnd;
+            (*trackNum)++;
+            pStart = aList[idx][0];
+            for (int32_t jdx = idx + 1; jdx < allTrack; jdx++) {
+                if (aList[jdx][0] != pStart) break;
+                if (aList[jdx][1] > aList[idx][1]) idx = jdx;
             }
-            if (aList[idx][STAPT] >= tList[jdx][ENDPT])
-                lenJ = tList[jdx][LEN] + (aList[idx][ENDPT] - aList[idx][STAPT]);
-            else
-                lenJ = tList[jdx][LEN] + (aList[idx][ENDPT] - tList[jdx][ENDPT]);
-            if (lenP < lenJ) pTrack = tList[jdx], lenP = lenJ;
-            if (lenP == lenJ && pTrack[TRAMOUNT] >= tList[jdx][TRAMOUNT])
-                pTrack = tList[jdx];
-        }
-        if (aList[idx][ENDPT] > pTrack[ENDPT]) {
-            tList[idx][TRAMOUNT] = pTrack[TRAMOUNT] + 1;
-            tList[idx][LEN] = lenP;
-            tList[idx][ENDPT] = aList[idx][ENDPT];
+            pEnd = aList[idx][1], idx++;
         } else {
-            tList[idx][TRAMOUNT] = pTrack[TRAMOUNT];
-            tList[idx][LEN] = pTrack[LEN];
-            tList[idx][ENDPT] = pTrack[ENDPT];
+            for (int32_t jdx = idx; jdx < allTrack; jdx++) {
+                if (aList[jdx][0] > pEnd) break;
+                if (aList[jdx][1] <= pEnd) continue;
+                if (aList[jdx][1] >= aList[idx][1]) idx = jdx;
+            }
+            if (aList[idx][1] > pEnd) {
+                pStart = aList[idx][0];
+                pEnd = aList[idx][1];
+                (*trackNum)++, idx++;
+            } else {
+                for (; idx < allTrack; idx++)
+                    if (aList[idx][0] > pEnd) break;
+            }
         }
     }
-    for (int32_t idx = 0; idx < *trackNum; idx++)
-        printf("%d %d %d\n", tList[idx][TRAMOUNT], tList[idx][ENDPT], tList[idx][LEN]);
-
-    (*time) -= tList[(*trackNum) - 1][LEN];
-    (*trackNum) = tList[(*trackNum) - 1][TRAMOUNT];
-    return;
+    (*time) += allTime - pEnd;
 }
 
 int main() {
@@ -103,7 +90,7 @@ int main() {
     aList = (int32_t **)malloc(audioNum * sizeof(int32_t *));
     for (int32_t idx = 0; idx < audioNum; idx++) {
         aList[idx] = (int32_t *)malloc(2 * sizeof(int32_t));
-        scanf("%d %d", &aList[idx][STAPT], &aList[idx][ENDPT]);
+        scanf("%d %d", &aList[idx][0], &aList[idx][1]);
     }
 
     mgSort(aList, audioNum, early);
