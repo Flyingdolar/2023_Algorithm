@@ -29,6 +29,7 @@
 *.dylib
 
 # Executables
+out
 *.exe
 *.out
 *.app
@@ -50,3 +51,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Editor Function
+.vscode
+.idea

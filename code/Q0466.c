@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void type1(uint32_t *list, uint32_t size) {
+void type1(uint32_t *list) {
     int32_t posX, newVal;
     scanf("%d %d", &posX, &newVal);
     list[--posX] = newVal;
@@ -12,10 +12,10 @@ void type1(uint32_t *list, uint32_t size) {
 void type2(const uint32_t *list, uint32_t size) {
     int32_t posX, newPos = 0;
     scanf("%d", &posX);
-    int32_t val = list[--posX];
-    for (size_t idx = 0; idx < size; idx++) {
+    uint32_t val = list[--posX];
+    for (size_t idx = 0; idx < (size_t)size; idx++) {
         if (list[idx] < val) newPos++;
-        if (list[idx] == val && idx <= posX) newPos++;
+        if (list[idx] == val && idx <= (size_t)posX) newPos++;
     }
     printf("%d\n", newPos);
     return;
@@ -27,12 +27,12 @@ int main() {
 
     scanf("%d %d", &n_Amount, &Q_operate);
     list = (uint32_t *)malloc(n_Amount * sizeof(uint32_t));
-    for (size_t idx = 0; idx < n_Amount; idx++)
+    for (size_t idx = 0; idx < (size_t)n_Amount; idx++)
         scanf("%d", &list[idx]);
 
     while (Q_operate--) {
         scanf("%d", &cmd);
-        if (cmd == 1) type1(list, n_Amount);
+        if (cmd == 1) type1(list);
         if (cmd == 2) type2(list, n_Amount);
     }
 
