@@ -1,87 +1,75 @@
 #include <iostream>
 #include <vector>
 
-#define VPII vector<pair<int, int>>
+#define VI vector<int>
+#define VB vector<bool>
+#define VVI vector<VI>
+#define PII pair<int, int>
+#define VPII vector<PII>
 
 using namespace std;
 
-typedef enum _visit_ {
-    ORIGIN = 0,
-    DISCOVER = 1,
-    FINISH = 2
-} visit;
+void crtDFS(VVI roadMap, int pos, VB &visited, VB &critical, VI &stack) {
+    stack.push_back(pos);
+    visited[pos] = true;
 
-void toZero(int *arr, int size) {
-    for (int idx = 0; idx < size; idx++)
-        arr[idx] = 0;
-    return;
-}
-
-int greatPair(pair<int, int> a, pair<int, int> b) {
-    return a.second - b.second;
-}
-
-void DFS(VPII roadList, VPII stack, int *visit, int &time, VPII &finish) {
-    int curPos = stack.back().first;
-
-    visit[curPos] = DISCOVER, time++;
-    for (auto road : roadList) {
-        if (road.first == curPos && visit[road.second] == ORIGIN) {
-            stack.push_back(make_pair(road.second, time));
-            DFS(roadList, stack, visit, time, finish);
+    for (auto road : roadMap[pos]) {
+        if (!visited[road]) {
+            crtDFS(roadMap, road, visited, critical, stack);
+            continue;
+        }
+        if (road != stack[stack.size() - 2]) {
+            for (int idx = stack.size() - 1; idx >= 0; idx--) {
+                critical[stack[idx]] = true;
+                if (stack[idx] == road) break;
+            }
         }
     }
-    visit[curPos] = FINISH, time++;
-    finish.push_back(stack.back());
-    finish.back().second = time;
+
     stack.pop_back();
     return;
 }
 
-// Do DFS and setup the value of pos by the order of finish time
-void setDFS(VPII &roadList, VPII &posList) {
-    int time = 0;
-    int *visit = new int[posList.size()];
-    VPII stack, finish;
+VB strongConnect(VVI roadMap, int posNum) {
+    VB critical(posNum, false), visited(posNum, false);
+    VI stack;
 
-    toZero(visit, posList.size());
-    for (auto pos : posList) {
-        if (visit[pos.first] == ORIGIN) {
-            stack.push_back(make_pair(pos.first, time));
-            DFS(roadList, stack, visit, time, finish);
-        }
+    for (int idx = 0; idx < posNum; idx++) {
+        if (visited[idx]) continue;
+        crtDFS(roadMap, idx, visited, critical, stack);
     }
 
-    sort(finish.begin(), finish.end(), greatPair);
-    for (size_t idx = 0; idx < posList.size(); idx++) {
-        posList[idx].first = finish[idx].first;
-        posList[idx].second = finish[idx].second;
-    }
-    delete[] visit;
-    return;
+    return critical;
 }
 
 int main() {
-    int posNum, roadNum, start, end;
-    // Data format: Road(Start, End), Pos(Number, Value)
-    VPII road, pos;
+    int posNum, roadNum;  // Amount of position and road
+    int start, end;       // Start and end of road, List of position
+    VVI roadMap;          // Road map: Record all road
+    VB posList;           // Position list: Record all position(is critical or not)
+    bool print = false;   // Print flag: Print the first line or not
 
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
     cin >> posNum >> roadNum;
 
-    for (int idx = 0; idx < roadNum; idx++) {
+    roadMap.resize(posNum);
+    while (roadNum--) {
         cin >> start >> end;
-        road.push_back(make_pair(start, end));
+        roadMap[start].push_back(end);
+        roadMap[end].push_back(start);
     }
+
+    posList = strongConnect(roadMap, posNum);
     for (int idx = 0; idx < posNum; idx++) {
-        pos.push_back(make_pair(idx, 0));
+        if (posList[idx]) continue;
+        print = true;
+        for (auto road : roadMap[idx]) {
+            if (road < idx && !posList[road]) continue;
+            if (road < idx) cout << road << " " << idx << endl;
+            if (road > idx) cout << idx << " " << road << endl;
+        }
     }
-
-    setDFS(road, pos);
-    for (auto p : pos) {
-        cout << p.first << " " << p.second << endl;
-    }
-
+    if (!print) cout << "No Critical Road" << endl;
     return 0;
 }
