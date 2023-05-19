@@ -1,53 +1,64 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
+
+#define ORIGIN 0
+#define DISCOVER 1
+#define FINISH 2
 
 #define VI vector<int>
 #define VB vector<bool>
 #define VVI vector<VI>
-#define PII pair<int, int>
-#define VPII vector<PII>
+#define PI pair<int, int>
+#define VPI vector<PI>
 
 using namespace std;
 
-void crtDFS(VVI roadMap, int pos, VB &visited, VB &critical, VI &stack) {
-    stack.push_back(pos);
-    visited[pos] = true;
+void DFS(VVI roadMap, int pos, VI &visited, VVI &stack, VPI &reqRoute) {
+    visited[pos] = DISCOVER;
 
     for (auto road : roadMap[pos]) {
-        if (!visited[road]) {
-            crtDFS(roadMap, road, visited, critical, stack);
+        if (visited[road] == FINISH) continue;
+        if (visited[road] == DISCOVER && !stack.empty()) {
+            if (stack.back().at(0) == road) continue;
+            for (int idx = stack.size() - 1; idx >= 0; idx--) {
+                stack[idx].at(2) = -1;
+                if (stack[idx].at(0) == road) break;
+            }
             continue;
         }
-        if (road != stack[stack.size() - 2]) {
-            for (int idx = stack.size() - 1; idx >= 0; idx--) {
-                critical[stack[idx]] = true;
-                if (stack[idx] == road) break;
-            }
-        }
+        stack.push_back({pos, road, 0});
+        DFS(roadMap, road, visited, stack, reqRoute);
     }
-
-    stack.pop_back();
+    if (!stack.empty()) {
+        if (stack.back().at(2) >= 0) {
+            if (stack.back().at(0) > stack.back().at(1))
+                swap(stack.back().at(0), stack.back().at(1));
+            reqRoute.push_back({stack.back().at(0), stack.back().at(1)});
+        }
+        stack.pop_back();
+        visited[pos] = FINISH;
+    }
     return;
 }
 
-VB strongConnect(VVI roadMap, int posNum) {
-    VB critical(posNum, false), visited(posNum, false);
-    VI stack;
+void findBridge(VVI roadMap, int posNum, VPI &reqRoute) {
+    VI visited(posNum, ORIGIN);
+    VVI stack;
 
     for (int idx = 0; idx < posNum; idx++) {
-        if (visited[idx]) continue;
-        crtDFS(roadMap, idx, visited, critical, stack);
+        if (visited[idx] == false)
+            DFS(roadMap, idx, visited, stack, reqRoute);
     }
 
-    return critical;
+    return;
 }
 
 int main() {
     int posNum, roadNum;  // Amount of position and road
     int start, end;       // Start and end of road, List of position
     VVI roadMap;          // Road map: Record all road
-    VB posList;           // Position list: Record all position(is critical or not)
-    bool print = false;   // Print flag: Print the first line or not
+    VPI reqRoute;         // Required route: Record route that is necessary.
 
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -60,16 +71,16 @@ int main() {
         roadMap[end].push_back(start);
     }
 
-    posList = strongConnect(roadMap, posNum);
-    for (int idx = 0; idx < posNum; idx++) {
-        if (posList[idx]) continue;
-        print = true;
-        for (auto road : roadMap[idx]) {
-            if (road < idx && !posList[road]) continue;
-            if (road < idx) cout << road << " " << idx << endl;
-            if (road > idx) cout << idx << " " << road << endl;
-        }
+    findBridge(roadMap, posNum, reqRoute);
+    if (reqRoute.empty()) {
+        cout << "No Critical Road" << endl;
+        return 0;
     }
-    if (!print) cout << "No Critical Road" << endl;
+    sort(reqRoute.begin(), reqRoute.end(), [](PI roadA, PI roadB) {
+        if (roadA.first == roadB.first) return roadA.second < roadB.second;
+        return roadA.first < roadB.first;
+    });
+    for (auto road : reqRoute)
+        cout << road.first << " " << road.second << endl;
     return 0;
 }
