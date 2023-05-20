@@ -1,7 +1,5 @@
 #include <algorithm>
 #include <iostream>
-#include <stack>
-#include <utility>
 #include <vector>
 
 #define UNVISIT -1
