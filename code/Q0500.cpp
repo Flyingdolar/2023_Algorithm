@@ -1,10 +1,12 @@
 #include <algorithm>
 #include <iostream>
+#include <stack>
+#include <utility>
 #include <vector>
 
-#define ORIGIN 0
-#define DISCOVER 1
-#define FINISH 2
+#define UNVISIT -1
+#define SET first
+#define LOW second
 
 #define VI vector<int>
 #define VB vector<bool>
@@ -14,73 +16,70 @@
 
 using namespace std;
 
-void DFS(VVI roadMap, int pos, VI &visited, VVI &stack, VPI &reqRoute) {
-    visited[pos] = DISCOVER;
+int posNum, roadNum;  // Amount of position and road
+VVI roadMap;          // Road map: Record all road
+VPI bridge;           // Bridge: Record all bridge
 
-    for (auto road : roadMap[pos]) {
-        if (visited[road] == FINISH) continue;
-        if (visited[road] == DISCOVER && !stack.empty()) {
-            if (stack.back().at(0) == road) continue;
-            for (int idx = stack.size() - 1; idx >= 0; idx--) {
-                stack[idx].at(2) = -1;
-                if (stack[idx].at(0) == road) break;
-            }
-            continue;
-        }
-        stack.push_back({pos, road, 0});
-        DFS(roadMap, road, visited, stack, reqRoute);
-    }
-    if (!stack.empty()) {
-        if (stack.back().at(2) >= 0) {
-            if (stack.back().at(0) > stack.back().at(1))
-                swap(stack.back().at(0), stack.back().at(1));
-            reqRoute.push_back({stack.back().at(0), stack.back().at(1)});
-        }
-        stack.pop_back();
-        visited[pos] = FINISH;
-    }
-    return;
-}
-
-void findBridge(VVI roadMap, int posNum, VPI &reqRoute) {
-    VI visited(posNum, ORIGIN);
-    VVI stack;
+void findBridge() {
+    VPI visTime(posNum, {UNVISIT, UNVISIT});  // Record visited time: {set, low}
+    VI visNode;                               // Track visited node
+    int time = 0;                             // Time
 
     for (int idx = 0; idx < posNum; idx++) {
-        if (visited[idx] == false)
-            DFS(roadMap, idx, visited, stack, reqRoute);
+        if (visTime[idx].SET != UNVISIT) continue;
+        visNode.push_back(idx);
+        while (!visNode.empty()) {
+            int curNode = visNode.back(), prevNode = -1;
+            if (visNode.size() > 1) prevNode = visNode.at(visNode.size() - 2);
+            if (visTime[curNode].SET == UNVISIT)
+                visTime[curNode].SET = visTime[curNode].LOW = time++;
+            for (auto road : roadMap[curNode]) {
+                if (visTime[road].SET != UNVISIT) {
+                    if (road != prevNode)
+                        visTime[curNode].LOW = min(visTime[curNode].LOW, visTime[road].SET);
+                    continue;
+                }
+                visNode.push_back(road);
+                break;
+            }
+            if (visNode.back() == curNode) {
+                visNode.pop_back();
+                if (prevNode != -1) {
+                    visTime[prevNode].LOW = min(visTime[prevNode].LOW, visTime[curNode].LOW);
+                    if (visTime[curNode].LOW > visTime[prevNode].SET) {
+                        if (curNode > prevNode) swap(curNode, prevNode);
+                        bridge.push_back({curNode, prevNode});
+                    }
+                }
+            }
+        }
     }
-
     return;
 }
 
 int main() {
-    int posNum, roadNum;  // Amount of position and road
-    int start, end;       // Start and end of road, List of position
-    VVI roadMap;          // Road map: Record all road
-    VPI reqRoute;         // Required route: Record route that is necessary.
-
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
     cin >> posNum >> roadNum;
 
     roadMap.resize(posNum);
+    int start, end;
     while (roadNum--) {
         cin >> start >> end;
         roadMap[start].push_back(end);
         roadMap[end].push_back(start);
     }
 
-    findBridge(roadMap, posNum, reqRoute);
-    if (reqRoute.empty()) {
+    findBridge();
+    if (bridge.empty()) {
         cout << "No Critical Road" << endl;
         return 0;
     }
-    sort(reqRoute.begin(), reqRoute.end(), [](PI roadA, PI roadB) {
+    sort(bridge.begin(), bridge.end(), [](PI roadA, PI roadB) {
         if (roadA.first == roadB.first) return roadA.second < roadB.second;
         return roadA.first < roadB.first;
     });
-    for (auto road : reqRoute)
+    for (auto road : bridge)
         cout << road.first << " " << road.second << endl;
     return 0;
 }
