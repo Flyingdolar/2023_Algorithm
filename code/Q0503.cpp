@@ -52,29 +52,25 @@ int sprLava(VVI &mapStat, queue<PII> &newLava) {
     return time;
 }
 
-bool DFS(VVI &mapStat, stack<PII> &route, PII &goal, int time) {
-    int mapW = mapStat[0].size(), mapH = mapStat.size();
-    PII curPos = route.top(), newPos;  // The current position and the new position.
-
-    if (curPos == goal) return true;
-    for (int dir : allDir) {
-        newPos.H = curPos.H + moveDir[dir].H;
-        newPos.W = curPos.W + moveDir[dir].W;
-        if (overFlow(newPos, mapH, mapW)) continue;
-        if (mapStat[newPos.H][newPos.W] > time) {
-            route.push(newPos), mapStat[newPos.H][newPos.W] = COVERED;
-            if (DFS(mapStat, route, goal, time)) return true;
-            route.pop();
-        }
-    }
-    return false;
-}
-
 // Check if the path is valid.
 bool findPath(VVI mapStat, PII stPt, PII edPt, int time) {
     stack<PII> route;  // Use DFS to find the path.
     route.push(stPt), mapStat[stPt.H][stPt.W] = COVERED;
-    return DFS(mapStat, route, edPt, time);  // Recursion version
+    while (!route.empty()) {
+        PII curPos = route.top(), newPos;  // The current position and the new position.
+        if (curPos == edPt) return true;
+        for (int dir : allDir) {
+            newPos.H = curPos.H + moveDir[dir].H;
+            newPos.W = curPos.W + moveDir[dir].W;
+            if (overFlow(newPos, mapStat.size(), mapStat[0].size())) continue;
+            if (mapStat[newPos.H][newPos.W] > time) {
+                route.push(newPos), mapStat[newPos.H][newPos.W] = COVERED;
+                break;
+            }
+        }
+        if (curPos == route.top()) route.pop();
+    }
+    return false;
 }
 
 int main(void) {
