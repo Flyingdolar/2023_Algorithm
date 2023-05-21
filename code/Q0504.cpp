@@ -7,9 +7,6 @@ using namespace std;
 #define VI vector<int>
 #define VB vector<bool>
 #define VVI vector<VI>
-#define PI pair<int, int>
-#define VPI vector<PI>
-#define VVPI vector<VPI>
 
 int ballNum, hitNum;
 VI hitList;
