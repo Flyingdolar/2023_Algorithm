@@ -64,53 +64,36 @@ int findCost(int cityA, int cityB) {
     return cost;
 }
 
-int shortPath() {
-    int sum = 0, cost;
-    int curCity = START;
+// Find Minimum Spanning Tree
+int MST() {
+    int sum = 0, visNum = 0;
+    int curCity = 0, minCost = MAXCOST;
     VI visCity(cityNum, false);
-    VI stack;
+    VI cityCost(cityNum, MAXCOST);
 
-    // Setup cost of all nodes
-    visCity[START] = true, cityList[START] = 0;
-    stack.push_back(START);
-    while (!stack.empty()) {
-        curCity = stack.back();
-        for (auto childCity : adjMap[curCity]) {
-            cost = cityList[curCity];
-            cost += findCost(curCity, childCity);
-            if (cost < cityList[childCity])
-                cityList[childCity] = cost;
-        }
-        for (auto nextCity : adjMap[curCity]) {
-            if (visCity[nextCity]) continue;
-            stack.push_back(nextCity);
-            visCity[nextCity] = true;
-            break;
-        }
-        if (stack.back() == curCity) stack.pop_back();
-    }
-
-    // Count shortest path cost by DFS
-    visCity = VI(cityNum, false), visCity[START] = true;
-    stack.push_back(START);
-    while (!stack.empty()) {
-        curCity = stack.back();
-        for (auto nextCity : adjMap[curCity]) {
-            if (visCity[nextCity]) continue;
-            cost = cityList[curCity];
-            cost += findCost(curCity, nextCity);
-            if (cityList[nextCity] == cost) {
-                cost -= cityList[curCity];
-                std::cout << curCity + 1 << " -> " << nextCity + 1 << " :: " << cost << endl;
-                stack.push_back(nextCity);
-                visCity[nextCity] = true;
-                sum += cost;
-                break;
+    cityCost[0] = 0;
+    while (visNum < cityNum) {
+        visCity[curCity] = true, ++visNum;
+        minCost = MAXCOST;
+        for (auto cab : cabList) {
+            if (cab[START] == curCity) {
+                if (visCity[cab[END]]) continue;
+                cityCost[cab[END]] = min(cityCost[cab[END]], cab[COST]);
+            }
+            if (cab[END] == curCity) {
+                if (visCity[cab[START]]) continue;
+                cityCost[cab[START]] = min(cityCost[cab[START]], cab[COST]);
             }
         }
-        if (stack.back() == curCity) stack.pop_back();
+        for (int idx = 0; idx < cityNum; idx++) {
+            if (visCity[idx]) continue;
+            if (cityCost[idx] < minCost) {
+                minCost = cityCost[idx];
+                curCity = idx;
+            }
+        }
     }
-
+    for (auto cost : cityCost) sum += cost;
     return sum;
 }
 
@@ -138,11 +121,8 @@ int main(void) {
         adjMap[cable[START]].pop_back(), adjMap[cable[END]].pop_back();
         cabList.erase(cabList.begin());
     }
-
-    sum = shortPath();
+    // Calculate the mininum cost
+    sum = MST();
     std::cout << sum << endl;
-
-    // for (auto cable : cabList) sum += cable[COST];
-    // cout << sum << endl;
     return 0;
 }
