@@ -16,6 +16,8 @@ void setHitMap() {
     for (int idx = 1; idx < hitNum; idx++) {
         if (hitList[idx] > hitList[idx - 1])
             adjMap[hitList[idx]].push_back(hitList[idx - 1]);
+        else
+            adjMap[hitList[idx - 1]].push_back(hitList[idx]);
     }
     return;
 }
