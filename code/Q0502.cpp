@@ -11,6 +11,7 @@ using namespace std;
 #define VVI vector<VI>
 #define PI pair<int, int>
 #define VPI vector<PI>
+#define VVPI vector<VPI>
 
 #define START 0
 #define END 1
@@ -18,9 +19,7 @@ using namespace std;
 #define MAXCOST 1000000000
 
 int cityNum, cabNum;  // Amount of city and cable
-VI cityList;          // Record all cost of cities
 VVI cabList;          // Cable list: Record all cable
-VVI adjMap;           // Adjacent map: Record all cable that connect to specific city
 
 // Compare Less Cost
 bool cmpCost(VI &cableA, VI &cableB) {
@@ -31,6 +30,12 @@ bool isBridge(VI cable) {
     int curCity = cable[START];
     VB visCity(cityNum, false);
     VI stack;
+    VVI adjMap(cityNum);
+
+    for (auto cab : cabList) {
+        adjMap[cab[START]].push_back(cab[END]);
+        adjMap[cab[END]].push_back(cab[START]);
+    }
 
     visCity[cable[START]] = true, visCity[cable[END]] = true;
     stack.push_back(cable[START]);
@@ -53,37 +58,26 @@ bool isBridge(VI cable) {
     return true;
 }
 
-int findCost(int cityA, int cityB) {
-    int cost = MAXCOST;
-    for (auto cab : cabList) {
-        if ((cab[START] == cityA && cab[END] == cityB) || (cab[START] == cityB && cab[END] == cityA)) {
-            cost = cab[COST];
-            break;
-        }
-    }
-    return cost;
-}
-
 // Find Minimum Spanning Tree
 int MST() {
     int sum = 0, visNum = 0;
     int curCity = 0, minCost = MAXCOST;
     VI visCity(cityNum, false);
     VI cityCost(cityNum, MAXCOST);
+    VVPI adjMap(cityNum);
+
+    for (auto cab : cabList) {
+        adjMap[cab[START]].push_back({cab[END], cab[COST]});
+        adjMap[cab[END]].push_back({cab[START], cab[COST]});
+    }
 
     cityCost[0] = 0;
     while (visNum < cityNum) {
         visCity[curCity] = true, ++visNum;
         minCost = MAXCOST;
-        for (auto cab : cabList) {
-            if (cab[START] == curCity) {
-                if (visCity[cab[END]]) continue;
-                cityCost[cab[END]] = min(cityCost[cab[END]], cab[COST]);
-            }
-            if (cab[END] == curCity) {
-                if (visCity[cab[START]]) continue;
-                cityCost[cab[START]] = min(cityCost[cab[START]], cab[COST]);
-            }
+        for (auto cable : adjMap[curCity]) {
+            if (visCity[cable.first]) continue;
+            cityCost[cable.first] = min(cityCost[cable.first], cable.second);
         }
         for (int idx = 0; idx < cityNum; idx++) {
             if (visCity[idx]) continue;
@@ -103,22 +97,17 @@ int main(void) {
     int cityA, cityB, cost, sum = 0;
 
     cin >> cityNum >> cabNum;
-    cabList.resize(cabNum), adjMap.resize(cityNum);
-    cityList.resize(cityNum, MAXCOST);
+    cabList.resize(cabNum);
     for (int idx = 0; idx < cabNum; idx++) {
         cin >> cityA >> cityB >> cost;
         cityA -= 1, cityB -= 1;
         cabList[idx] = {cityA, cityB, cost};
-        adjMap[cityA].push_back(cityB), adjMap[cityB].push_back(cityA);
     }
     // Sort cabList by cost (Ascending)
     sort(cabList.begin(), cabList.end(), cmpCost);
     while (cabList.size() > 0) {
         VI cable = cabList.front();
         if (isBridge(cable)) break;
-        remove(adjMap[cable[START]].begin(), adjMap[cable[START]].end(), cable[END]);
-        remove(adjMap[cable[END]].begin(), adjMap[cable[END]].end(), cable[START]);
-        adjMap[cable[START]].pop_back(), adjMap[cable[END]].pop_back();
         cabList.erase(cabList.begin());
     }
     // Calculate the mininum cost
